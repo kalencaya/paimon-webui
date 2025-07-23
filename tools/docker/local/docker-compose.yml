@@ -84,6 +84,9 @@ services:
     networks:
       - paimon
 
+
+# 默认用户名/密码是：admin/admin
+
 networks:
   paimon:
     driver: bridge
