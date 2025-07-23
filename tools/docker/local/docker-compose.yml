@@ -1,0 +1,76 @@
+version: '3'
+
+services:
+
+  mysql:
+    image: bitnami/mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: paimon
+    volumes:
+      - ../../../scripts/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    networks:
+      - paimon
+
+  minio:
+    image: bitnami/minio:2025.4.8
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_DEFAULT_BUCKETS=paimon:public
+      - MINIO_PROMETHEUS_AUTH_TYPE=public # 低版本不起效，升级到最新版本
+    ports:
+      - 9000:9000
+      - 9001:9001
+    networks:
+      - paimon
+
+  jobmanager:
+    image: flink:1.18.0-scala_2.12-java8
+    command: jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+    ports:
+      - 8081:8081
+    networks:
+      - paimon
+
+  taskmanager:
+    image: flink:1.18.0-scala_2.12-java8
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 8
+    networks:
+      - paimon
+  sql-gateway:
+    image: flink:1.18.0-scala_2.12-java8
+    depends_on:
+      - jobmanager
+      - taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 8
+    command: ['/bin/bash -c /opt/flink/bin/sql-gateway.sh start-foreground -Drest.address=jobmanager -Dsql-gateway.endpoint.rest.address=0.0.0.0']
+    scale: 1
+    ports:
+      - 8083:8083
+    networks:
+      - paimon
+
+networks:
+  paimon:
+    driver: bridge
