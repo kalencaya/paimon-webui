@@ -1,4 +1,4 @@
-version: '3'
+version: '4'
 
 services:
 
@@ -34,8 +34,10 @@ services:
 
   jobmanager:
     image: flink:1.18.0-scala_2.12-java8
+    container_name: jobmanager
     command: jobmanager
     environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
     ports:
@@ -45,26 +47,37 @@ services:
 
   taskmanager:
     image: flink:1.18.0-scala_2.12-java8
+    container_name: taskmanager
     depends_on:
       - jobmanager
     command: taskmanager
     scale: 1
     environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: 8
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 8
     networks:
       - paimon
+
   sql-gateway:
     image: flink:1.18.0-scala_2.12-java8
+    container_name: sql-gateway
     depends_on:
       - jobmanager
       - taskmanager
     environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
-        taskmanager.numberOfTaskSlots: 8
-    command: ['/bin/bash -c /opt/flink/bin/sql-gateway.sh start-foreground -Drest.address=jobmanager -Dsql-gateway.endpoint.rest.address=0.0.0.0']
+        execution.target: remote
+        rest.address: jobmanager
+        rest.port: 8081
+    command: >
+      /bin/sh -c "
+      ./bin/sql-gateway.sh start-foreground -Dsql-gateway.endpoint.rest.address=0.0.0.0 -Drest.address=jobmanager
+      "
     scale: 1
     ports:
       - 8083:8083
