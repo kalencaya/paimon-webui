@@ -40,8 +40,17 @@ services:
       JOB_MANAGER_RPC_ADDRESS: jobmanager
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
+        s3.endpoint: http://minio:9000
+        s3.access-key: admin
+        s3.secret-key: password
+        s3.path.style.access: true
     ports:
       - 8081:8081
+    volumes:
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-1.18-0.8.1.jar:/opt/flink/lib/paimon-flink-1.18-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-action-0.8.1.jar:/opt/flink/lib/paimon-flink-action-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-s3-0.8.1.jar:/opt/flink/lib/paimon-s3-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar:/opt/flink/lib/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar
     networks:
       - paimon
 
@@ -58,6 +67,15 @@ services:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 8
+        s3.endpoint: http://minio:9000
+        s3.access-key: admin
+        s3.secret-key: password
+        s3.path.style.access: true
+    volumes:
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-1.18-0.8.1.jar:/opt/flink/lib/paimon-flink-1.18-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-action-0.8.1.jar:/opt/flink/lib/paimon-flink-action-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-s3-0.8.1.jar:/opt/flink/lib/paimon-s3-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar:/opt/flink/lib/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar
     networks:
       - paimon
 
@@ -74,6 +92,10 @@ services:
         execution.target: remote
         rest.address: jobmanager
         rest.port: 8081
+        s3.endpoint: http://minio:9000
+        s3.access-key: admin
+        s3.secret-key: password
+        s3.path.style.access: true
     command: >
       /bin/sh -c "
       ./bin/sql-gateway.sh start-foreground -Dsql-gateway.endpoint.rest.address=0.0.0.0 -Drest.address=jobmanager
@@ -81,6 +103,11 @@ services:
     scale: 1
     ports:
       - 8083:8083
+    volumes:
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-1.18-0.8.1.jar:/opt/flink/lib/paimon-flink-1.18-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-flink-action-0.8.1.jar:/opt/flink/lib/paimon-flink-action-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/paimon-s3-0.8.1.jar:/opt/flink/lib/paimon-s3-0.8.1.jar
+      - /Users/wangqi/Documents/software/paimon/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar:/opt/flink/lib/flink-shaded-hadoop-2-uber-2.8.3-9.0.jar
     networks:
       - paimon
 
